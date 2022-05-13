@@ -1,0 +1,32 @@
+{
+  "name": "wasd.tv-bot",
+  "version": "1.0.0",
+  "description": "WASD.tv bot provider",
+  "main": "WASD.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/idaspin/wasd.tv-bot.git"
+  },
+  "keywords": [
+    "chat",
+    "chatbot",
+    "bot",
+    "wasdtv",
+    "wasd.tv",
+    "wasd"
+  ],
+  "author": "idaspin",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/idaspin/wasd.tv-bot/issues"
+  },
+  "homepage": "https://github.com/idaspin/wasd.tv-bot#readme",
+  "dependencies": {
+    "events": "^3.3.0",
+    "request": "^2.88.2",
+    "socket.io-client": "^2.4.0"
+  }
+}
