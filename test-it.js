@@ -1,4 +1,4 @@
-const WASD = require('./WASD.js');
+const WASD = require('wasd.tv-bot');
 
 // ACCESS_TOKEN: https://wasd.tv/general-settings/API
 WASD.init(`idoaspin`, `access_token`);
