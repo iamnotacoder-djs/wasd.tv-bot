@@ -29,7 +29,7 @@ class WASD {
             this.channelId = await this.#getChannelId(this.userName);
             this.userId = await this.#getUserId(this.userName);
             this.streamId = await this.#getStreamId(this.channelId);
-        } catch {
+        } catch (err) {
             this.event.emit('error', `GettingTokenError`, err);
             console.log(`I'll try to reconnect in 10 seconds.`);
             return setTimeout(() => {
@@ -88,7 +88,9 @@ class WASD {
             }
             request(options, (error, response, body) => {
                 if (error) return reject();
-                resolve(JSON.parse(body).result);
+                let json = JSON.parse(body);
+                if (json.result) return resolve(json.result);
+                reject(json);
             });
         });
     }
@@ -104,7 +106,9 @@ class WASD {
             }
             request(options, (error, response, body) => {
                 if (error) return reject();
-                resolve(JSON.parse(body).result.channel_id);
+                let json = JSON.parse(body);
+                if (json.result.channel_id) return resolve(json.result.channel_id);
+                reject(json);
             });
         });
     }
@@ -120,7 +124,9 @@ class WASD {
             }
             request(options, (error, response, body) => {
                 if (error) return reject();
-                resolve(JSON.parse(body).result.user_id);
+                let json = JSON.parse(body);
+                if (json.result.user_id) return resolve(json.result.user_id);
+                reject(json);
             });
         });
     }
@@ -136,7 +142,9 @@ class WASD {
             }
             request(options, (error, response, body) => {
                 if (error) return reject();
-                resolve(JSON.parse(body).result[0].media_container_streams[0].stream_id);
+                let json = JSON.parse(body);
+                if (json.result[0].media_container_streams[0].stream_id) return resolve(json.result[0].media_container_streams[0].stream_id);
+                reject(json);
             });
         });
     }
