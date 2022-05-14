@@ -1,6 +1,6 @@
 {
   "name": "wasd.tv-bot",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "WASD.tv bot provider",
   "main": "WASD.js",
   "scripts": {
