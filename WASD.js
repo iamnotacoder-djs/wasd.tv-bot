@@ -24,10 +24,18 @@ class WASD {
     async init(userName = ``, access_token = ``, streamId) {
         this.userName = userName;
         this.#ACCESS_TOKEN = access_token;
-        this.#JWT_TOKEN = await this.#getJWTToken();
-        this.channelId = await this.#getChannelId(this.userName);
-        this.userId = await this.#getUserId(this.userName);
-        this.streamId = await this.#getStreamId(this.channelId);
+        try {
+            this.#JWT_TOKEN = await this.#getJWTToken();
+            this.channelId = await this.#getChannelId(this.userName);
+            this.userId = await this.#getUserId(this.userName);
+            this.streamId = await this.#getStreamId(this.channelId);
+        } catch {
+            this.event.emit('error', `GettingTokenError`, err);
+            console.log(`I'll try to reconnect in 10 seconds.`);
+            return setTimeout(() => {
+                this.init();
+            }, 1000 * 10);
+        }
         this.streamId = streamId ?? this.streamId;
 
         console.log(`Trying to connect:\n${this.userName} (ID: ${this.channelId}) | StreamID: ${this.streamId}`);
