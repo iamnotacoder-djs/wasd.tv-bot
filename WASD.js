@@ -21,19 +21,30 @@ class WASD {
     constructor() {
     }
 
+    /**
+     * Получение информации о пользователе. Подключение к WebSocket серверу.
+     * @date 2022-05-15
+     * @param {String} userName Имя пользователя/канала
+     * @param {String} access_token Access_Token (Получить можно здесь: https://wasd.tv/general-settings/API)
+     * @param {Number} streamId ID стрима (Опционально)
+     * @returns {null}
+     */
     async init(userName = ``, access_token = ``, streamId) {
         this.userName = userName;
         this.#ACCESS_TOKEN = access_token;
         try {
             this.#JWT_TOKEN = await this.#getJWTToken();
-            this.channelId = await this.#getChannelId(this.userName);
-            this.userId = await this.#getUserId(this.userName);
-            this.streamId = await this.#getStreamId(this.channelId);
+
+            let userInfo = await this.getUserInfo(this.userName);
+            this.channelId = userInfo.channel_id;
+            this.userId = userInfo.user_id;
+
+            this.streamId = await this.getStreamId(this.channelId);
         } catch (err) {
             this.event.emit('error', `GettingTokenError`, err);
             console.log(`I'll try to reconnect in 10 seconds.`);
             return setTimeout(() => {
-                this.init();
+                this.init()
             }, 1000 * 10);
         }
         this.streamId = streamId ?? this.streamId;
@@ -95,11 +106,17 @@ class WASD {
         });
     }
     
-    #getChannelId(username = this.userName) {
+    /**
+     * Получение информации о пользователе
+     * @date 2022-05-15
+     * @param {String} userName Имя пользователя/канала
+     * @returns {Promise} 
+     */
+    getUserInfo(userName = this.userName) {
         return new Promise((resolve, reject) => {
             var options = {
                 method: "GET",
-                url: `https://wasd.tv/api/channels/nicknames/${username}`,
+                url: `https://wasd.tv/api/channels/nicknames/${userName}`,
                 headers: {
                    'Authorization': `Token ${this.#ACCESS_TOKEN}`
                 }
@@ -107,31 +124,18 @@ class WASD {
             request(options, (error, response, body) => {
                 if (error) return reject();
                 let json = JSON.parse(body);
-                if (json.result.channel_id) return resolve(json.result.channel_id);
-                reject(json);
+                resolve(json.result);
             });
         });
     }
     
-    #getUserId(username = this.userName) {
-        return new Promise((resolve, reject) => {
-            var options = {
-                method: "GET",
-                url: `https://wasd.tv/api/channels/nicknames/${username}`,
-                headers: {
-                   'Authorization': `Token ${this.#ACCESS_TOKEN}`
-                }
-            }
-            request(options, (error, response, body) => {
-                if (error) return reject();
-                let json = JSON.parse(body);
-                if (json.result.user_id) return resolve(json.result.user_id);
-                reject(json);
-            });
-        });
-    }
-    
-    #getStreamId(channelid = this.channelId) {
+    /**
+     * Получить ID последнего стрима на канале пользователя в публичном доступе
+     * @date 2022-05-15
+     * @param {Number} channelid ID канала
+     * @returns {Promise}
+     */
+    getStreamId(channelid = this.channelId) {
         return new Promise((resolve, reject) => {
             var options = {
                 method: "GET",
@@ -167,11 +171,21 @@ class WASD {
 
     #pingServer() {
         this.#socket.emit('2');
+        this.getStreamId(this.channelId)
+            .then((streamId) => {
+                if (streamId != this.streamId) this.init();
+            })
         setTimeout(() => {
             this.#pingServer();
         }, 1000 * 25);
     }
     
+    /**
+     * Получение информации о канале пользователя
+     * @date 2022-05-15
+     * @param {String} username Имя пользователя/канала
+     * @returns {Promise} 
+     */
     getChannelInfo(userName = this.userName) {
         return new Promise((resolve, reject) => {
             var options = {
@@ -188,6 +202,11 @@ class WASD {
         });
     }
     
+    /**
+     * Получение массива последних 50 платных подписок на канале
+     * @date 2022-05-15
+     * @returns {Promise}
+     */
     getChannelSubs() {
         return new Promise((resolve, reject) => {
             var options = {
@@ -204,6 +223,13 @@ class WASD {
         });
     }
     
+    /**
+     * Установка режима чата
+     * @date 2022-05-15
+     * @param {Number} chatRoleLimitMode 0 - чат доступен для всех, 1 - чат для фолловеров, 2 - чат для платных подписчиков
+     * @param {Number} chatDelayLimitMode Количество секунд, через которое можно отправлять сообщения
+     * @returns {Promise}
+     */
     setChatMode(chatRoleLimitMode = 0, chatDelayLimitMode = 0) {
         if (![0, 1, 2].includes(chatRoleLimitMode)) chatRoleLimitMode = 0;
         if (![0, 5, 10, 30, 60].includes(chatDelayLimitMode)) chatDelayLimitMode = 0;
@@ -226,6 +252,12 @@ class WASD {
         });
     }
     
+    /**
+     * Добавление модератора
+     * @date 2022-05-15
+     * @param {Number} userId ID пользователя
+     * @returns {Promise}
+     */
     addModerator(userId = 0) {
         return new Promise((resolve, reject) => {
             var options = {
@@ -245,6 +277,12 @@ class WASD {
         });
     }
     
+    /**
+     * Удаление модератора
+     * @date 2022-05-15
+     * @param {Number} userId ID пользователя
+     * @returns {Promise}
+     */
     removeModerator(userId = 0) {
         return new Promise((resolve, reject) => {
             var options = {
@@ -261,6 +299,14 @@ class WASD {
         });
     }
     
+    /**
+     * Бан пользователя
+     * @date 2022-05-15
+     * @param {Number} userId ID пользователя
+     * @param {Boolean} keepMessages Удаление сообщений
+     * @param {Number} minutes Длительность бана в минутах
+     * @returns {Promise}
+     */
     banUser(userId = 0, keepMessages = true, minutes = 10) {
         return new Promise((resolve, reject) => {
             var options = {
@@ -283,6 +329,12 @@ class WASD {
         });
     }
     
+    /**
+     * Разблокировка пользователя
+     * @date 2022-05-15
+     * @param {Number} userId ID пользователя
+     * @returns {Promise}
+     */
     unbanUser(userId = 0) {
         return new Promise((resolve, reject) => {
             var options = {
@@ -299,6 +351,12 @@ class WASD {
         });
     }
     
+    /**
+     * Получение списка модераторов канала пользователя
+     * @date 2022-05-15
+     * @param {Number} userId ID владельца канала
+     * @returns {Promise}
+     */
     getChannelModerators(userId = this.userId) {
         return new Promise((resolve, reject) => {
             var options = {
@@ -315,6 +373,12 @@ class WASD {
         });
     }
     
+    /**
+     * Получение списка банов на канале пользователя
+     * @date 2022-05-15
+     * @param {Number} userId ID владельца канала
+     * @returns {Promise}
+     */
     getChannelBans(userId = this.userId) {
         return new Promise((resolve, reject) => {
             var options = {

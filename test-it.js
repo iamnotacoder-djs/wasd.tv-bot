@@ -1,4 +1,4 @@
-const WASD = require('wasd.tv-bot');
+const WASD = require('./WASD.js'); // require('wasd.tv-bot')
 
 // ACCESS_TOKEN: https://wasd.tv/general-settings/API
 WASD.init(`idoaspin`, `access_token`);
@@ -20,18 +20,6 @@ WASD.event.on('ready', async (status) => {
         user_sticker_packs: [],
         chat_settings: { goodbyeBetaGifts: '0' }
     };
-    if (status == "APIConnect") {
-        let info = await WASD.getChannelInfo();
-        console.log(info);
-        /* await WASD.getChannelSubs();
-        await WASD.setChatMode(chatRoleLimitMode, chatDelayLimitMode);
-        await WASD.addModerator(userId);
-        await WASD.removeModerator(userId);
-        await WASD.banUser(userId, keepMessages, minutes);
-        await WASD.unbanUser(userId);
-        await WASD.getChannelModerators(userId);
-        await WASD.getChannelBans(userId);*/
-    }
 });
 
 WASD.event.on('message', (message) => {
@@ -54,6 +42,10 @@ WASD.event.on('message', (message) => {
         date_time: '2022-05-12T17:01:22.954Z',
         streamer_id: 1178907
     };
+    
+    if (['badword1', 'badword2'].some(bw => message.message.includes(bw))) {
+        WASD.banUser(message.user_id, false, 10);
+    }
 });
 
 WASD.event.on('follow', (event) => {
