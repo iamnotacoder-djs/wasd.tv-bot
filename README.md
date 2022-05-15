@@ -55,6 +55,11 @@ WASD.event.on('error', (label, err) => {
 });
 ```
 
+## TODO
+- Check and auto connect to the current stream
+- By analogy with dscord.js - move all JSON from API to classes
+- Cache of users/channels/messages
+
 ## Community
 
 - Found a bug: [submit an issue.](https://github.com/idaspin/wasd.tv-bot/issues/new)
