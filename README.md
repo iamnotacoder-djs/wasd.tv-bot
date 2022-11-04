@@ -62,5 +62,5 @@ WASD.event.on('error', (label, err) => {
 
 ## Community
 
-- Found a bug: [submit an issue.](https://github.com/idaspin/wasd.tv-bot/issues/new)
+- Found a bug: [submit an issue.](https://github.com/iamnotacoder-djs/wasd.tv-bot/issues/new)
 - Discussion and help about wasd.tv-bot: [🇷🇺 Discord Server](https://discord.gg/YeqrTtpmaH)
